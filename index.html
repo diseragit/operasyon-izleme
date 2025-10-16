@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canlı Operasyon Durumu İzleme</title>
+    <meta http-equiv="refresh" content="30"> 
+    
+    <style>
+        /* Modern ve okunaklı bir arka plan ve yazı tipi */
+        body { 
+            background-color: #2c3e50; /* Koyu Mavi-Gri */
+            color: white; 
+            text-align: center; 
+            padding: 20px; 
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+        
+        /* Görüntü çerçevesi ve gölge */
+        img { 
+            max-width: 95%; 
+            height: auto; 
+            border: 5px solid #3498db; /* Parlak Mavi Çerçeve */
+            box-shadow: 0 8px 16px rgba(0,0,0,0.7); /* Derin Gölge */
+            border-radius: 8px; /* Köşe yuvarlama */
+            display: block; /* Resmi ortalamak için */
+            margin: 20px auto; 
+        }
+        
+        h1 { 
+            color: #ecf0f1; /* Açık Gri */
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+        
+        p { 
+            font-size: 1.1em;
+            color: #bdc3c7; /* Orta Gri */
+        }
+    </style>
+</head>
+<body>
+    <h1>CANLI OPERASYON EKRANI (OTOMATİK YENİLENİYOR)</h1>
+    <p>Son Güncelleme: <span id="timestamp">Bekleniyor...</span></p>
+    
+    <img id="liveImage" src="operasyon_durumu.png?v=INITIAL" alt="Operasyon Durumu Görüntüsü Yüklenemedi">
+    
+    <script>
+        const imagePath = "operasyon_durumu.png";
+        const updateInterval = 30000; // 30 saniye (BB.py ile senkronize olmalı)
+
+        function refreshImage() {
+            const img = document.getElementById('liveImage');
+            const timestamp = new Date();
+            
+            // Tarayıcının önbelleğini (cache) atlamak için dinamik sorgu parametresi ekle
+            // Bu, tarayıcının her defasında yeni resmi indirmesini garanti eder.
+            img.src = imagePath + "?v=" + timestamp.getTime();
+            
+            // Son güncelleme zamanını göster
+            document.getElementById('timestamp').innerText = timestamp.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        // Sayfa yüklendikten hemen sonra ve sonraki her intervalde yenile
+        refreshImage();
+        setInterval(refreshImage, updateInterval);
+    </script>
+</body>
+</html>
