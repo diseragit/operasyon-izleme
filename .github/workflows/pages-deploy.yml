@@ -1,54 +1,49 @@
 # .github/workflows/pages-deploy.yml
-name: GitHub Pages Deployment with Cleanup
+name: GitHub Pages Deployment
 
 on:
   push:
-    branches: ["main"]  # Ana branch'iniz
-    paths-ignore:  # PNG ve index.html değişiklikleri workflow'u tetiklemez
+    branches: ["main"]
+    paths-ignore:  # Bu değişiklikler workflow'u tetiklemez
       - 'operasyon_durumu.png'
       - 'index.html'
-  workflow_dispatch:  # Manuel tetikleme için
+  workflow_dispatch:  # Manuel tetikleme
 
 permissions:
   contents: read
   pages: write
   id-token: write
-  actions: write  # Cleanup için gerekli
 
 concurrency:
   group: "pages"
-  cancel-in-progress: false  # İptal yerine sıraya al
+  cancel-in-progress: false
 
 jobs:
-  cleanup:  # Önce eski deployment'ları sil
+  cleanup:  # Önce sil
     runs-on: ubuntu-latest
-    permissions: write-all  # Silme izni
+    permissions: write-all
     steps:
-      - name: 🗑️ Eski Deployment'ları Sil
-        uses: strumwolf/delete-deployment-environment@v3  # GitHub Marketplace Action
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}  # Otomatik token
-          environment: github-pages  # Environment adı (GitHub Pages için)
-          onlyRemoveDeployments: true  # Sadece deployment'ları sil, environment'ı koru
+      - name: Eski Deployment'ları Sil
+        uses: ./.github/actions/delete-deployments
 
-  deploy:  # Sonra yeni deployment yap
+  deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: cleanup  # Cleanup tamamlandıktan sonra çalış
+    needs: cleanup  # Silme tamamlandıktan sonra deploy et
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
+      
       - name: Setup Pages
         uses: actions/configure-pages@v4
-        
+      
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'  # Tüm repo'yu yükle
-        
+          path: '.'
+      
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
