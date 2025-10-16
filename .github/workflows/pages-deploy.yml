@@ -1,42 +1,54 @@
 # .github/workflows/pages-deploy.yml
-name: GitHub Pages Deployment  # Workflow adı (değiştirebilirsiniz)
+name: GitHub Pages Deployment with Cleanup
 
 on:
-  push:  # Tetiklenme koşulu: Push/commit
-    branches: ["main"]  # Ana branch'iniz (eğer farklıysa değiştirin, örneğin "master")
-    paths-ignore:  # ÖNEMLİ: Bu dosyaların değişiklikleri workflow'u tetiklemez
-      - 'operasyon_durumu.png'  # PNG güncellemeleri yok sayılır
-      - 'index.html'  # index.html güncellemeleri yok sayılır
-      # İsterseniz ekleyin: - '*.png' (tüm PNG'leri yok say)
-      # - '*.html' (tüm HTML'leri yok say)
+  push:
+    branches: ["main"]  # Ana branch'iniz
+    paths-ignore:  # PNG ve index.html değişiklikleri workflow'u tetiklemez
+      - 'operasyon_durumu.png'
+      - 'index.html'
+  workflow_dispatch:  # Manuel tetikleme için
 
-permissions:  # Gerekli izinler
-  contents: read  # Dosyaları okuma izni
-  pages: write    # Pages deployment izni
-  id-token: write # Token yazma izni
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: write  # Cleanup için gerekli
 
-concurrency:  # Eşzamanlılık kontrolü (iptal hatalarını önler)
-  group: "pages"  # Grup adı
-  cancel-in-progress: false  # Eski workflow'ları iptal ETME, sıraya al
+concurrency:
+  group: "pages"
+  cancel-in-progress: false  # İptal yerine sıraya al
 
 jobs:
-  deploy:  # İş adı
-    environment:  # Ortam ayarları
+  cleanup:  # Önce eski deployment'ları sil
+    runs-on: ubuntu-latest
+    permissions: write-all  # Silme izni
+    steps:
+      - name: 🗑️ Eski Deployment'ları Sil
+        uses: strumwolf/delete-deployment-environment@v3  # GitHub Marketplace Action
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}  # Otomatik token
+          environment: github-pages  # Environment adı (GitHub Pages için)
+          onlyRemoveDeployments: true  # Sadece deployment'ları sil, environment'ı koru
+
+  deploy:  # Sonra yeni deployment yap
+    environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest  # İşletim sistemi
+    runs-on: ubuntu-latest
+    needs: cleanup  # Cleanup tamamlandıktan sonra çalış
     steps:
-      - name: Checkout  # Kodu indir
+      - name: Checkout
         uses: actions/checkout@v4
         
-      - name: Setup Pages  # Pages ortamını hazırla
+      - name: Setup Pages
         uses: actions/configure-pages@v4
         
-      - name: Upload artifact  # Dosyaları yükle
+      - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'  # Tüm repo'yu yükle (veya spesifik klasör belirtin)
-          
-      - name: Deploy to GitHub Pages  # Deployment yap
+          path: '.'  # Tüm repo'yu yükle
+        
+      - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
