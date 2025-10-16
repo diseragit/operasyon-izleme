@@ -1,0 +1,28 @@
+# .github/workflows/common-cleanup.yaml
+name: Common Deployment Cleanup
+
+on:
+  # Workflow tamamlandıktan sonra çalış
+  workflow_run:
+    types: [completed]
+    workflows:  # Hangi workflow'lar tetiklesin (GitHub Pages deployment'ını hedefle)
+      - 'GitHub Pages Deployment'  # Workflow adınızı buraya yazın (varsayılan: pages build and deployment)
+      - 'pages build and deployment'  # Varsayılan adı ekleyin
+
+permissions:
+  contents: read  # Checkout için
+  deployments: write  # Silme için
+  actions: write  # Actions için
+
+concurrency:
+  group: ${{ github.workflow }}-shared
+  cancel-in-progress: true  # İlerideki işleri iptal et (temizlik için)
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4  # Repo'yu indir
+
+      - name: Silme İşlemi
+        uses: ./.github/actions/delete-deployments  # Yerel action'ı çağır
