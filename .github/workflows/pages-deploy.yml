@@ -1,1 +1,42 @@
+# .github/workflows/pages-deploy.yml
+name: GitHub Pages Deployment  # Workflow adı (değiştirebilirsiniz)
 
+on:
+  push:  # Tetiklenme koşulu: Push/commit
+    branches: ["main"]  # Ana branch'iniz (eğer farklıysa değiştirin, örneğin "master")
+    paths-ignore:  # ÖNEMLİ: Bu dosyaların değişiklikleri workflow'u tetiklemez
+      - 'operasyon_durumu.png'  # PNG güncellemeleri yok sayılır
+      - 'index.html'  # index.html güncellemeleri yok sayılır
+      # İsterseniz ekleyin: - '*.png' (tüm PNG'leri yok say)
+      # - '*.html' (tüm HTML'leri yok say)
+
+permissions:  # Gerekli izinler
+  contents: read  # Dosyaları okuma izni
+  pages: write    # Pages deployment izni
+  id-token: write # Token yazma izni
+
+concurrency:  # Eşzamanlılık kontrolü (iptal hatalarını önler)
+  group: "pages"  # Grup adı
+  cancel-in-progress: false  # Eski workflow'ları iptal ETME, sıraya al
+
+jobs:
+  deploy:  # İş adı
+    environment:  # Ortam ayarları
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest  # İşletim sistemi
+    steps:
+      - name: Checkout  # Kodu indir
+        uses: actions/checkout@v4
+        
+      - name: Setup Pages  # Pages ortamını hazırla
+        uses: actions/configure-pages@v4
+        
+      - name: Upload artifact  # Dosyaları yükle
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'  # Tüm repo'yu yükle (veya spesifik klasör belirtin)
+          
+      - name: Deploy to GitHub Pages  # Deployment yap
+        id: deployment
+        uses: actions/deploy-pages@v4
