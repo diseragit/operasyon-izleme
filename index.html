@@ -1,84 +1,18 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canlı Operasyon Durumu İzleme</title>
-    
-    <style>
-        /* Modern ve okunaklı bir arka plan ve yazı tipi */
-        body { 
-            background-color: #2c3e50; /* Koyu Mavi-Gri */
-            color: white; 
-            text-align: center; 
-            padding: 20px; 
-            font-family: Arial, sans-serif;
-            margin: 0;
-        }
-        
-        /* Görüntü çerçevesi ve gölge */
-        img { 
-            max-width: 95%; 
-            height: auto; 
-            border: 5px solid #3498db; /* Parlak Mavi Çerçeve */
-            box-shadow: 0 8px 16px rgba(0,0,0,0.7); /* Derin Gölge */
-            border-radius: 8px; /* Köşe yuvarlama */
-            display: block; /* Resmi ortalamak için */
-            margin: 20px auto; 
-        }
-        
-        h1 { 
-            color: #ecf0f1; /* Açık Gri */
-            font-size: 1.8em;
-            margin-bottom: 10px;
-        }
-        
-        p { 
-            font-size: 1.1em;
-            color: #bdc3c7; /* Orta Gri */
-        }
-    </style>
+    <title>Operasyon İzleme</title>
 </head>
 <body>
-    <h1>CANLI OPERASYON EKRANI</h1>
-    <p>Son Güncelleme: <span id="timestamp">Yükleniyor...</span></p>
-    
-    <img id="liveImage" src="" alt="Operasyon Durumu Görüntüsü Yüklenemedi">
-    
+    <img src="operasyon_durumu_20251016_202311.png?t=1729103963" alt="Operasyon Durumu">
     <script>
-        // Resmin dosya adı
-        const imagePath = "operasyon_durumu.png";
-        
-        // Yenileme aralığı (bb.py'deki GECIKME_SURESI ile aynı olmalı)
-        const updateInterval = 60000; // 30 saniye
-
-        function refreshImage() {
-            const imgElement = document.getElementById('liveImage');
-            const timeElement = document.getElementById('timestamp');
-            
-            // O anki zamanı temsil eden benzersiz bir sayı oluştur (milisaniye cinsinden)
-            const cacheBuster = new Date().getTime();
-            
-            // --- EN ÖNEMLİ KISIM ---
-            // Resmin src'sini her defasında benzersiz bir parametre ile güncelleyerek
-            // tarayıcının ve CDN'in önbelleğini atlamasını sağlıyoruz.
-            imgElement.src = `${imagePath}?v=${cacheBuster}`;
-            
-            // Son güncelleme zamanını ekrana yazdır
-            const now = new Date();
-            timeElement.innerText = now.toLocaleTimeString('tr-TR', { 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit' 
-            });
+        // Otomatik yenileme için istemci tarafı mantığı (opsiyonel)
+        function updateImage() {
+            const img = document.getElementById('operasyonImage');
+            img.src = img.src.split('?')[0] + `?t=${Date.now()}`;
         }
-
-        // Sayfa ilk yüklendiğinde resmi hemen getir
-        document.addEventListener('DOMContentLoaded', (event) => {
-            refreshImage();
-            // Ve belirtilen aralıklarla yenilemeyi başlat
-            setInterval(refreshImage, updateInterval);
-        });
+        setInterval(updateImage, 30000); // 30 saniyede bir yenile
+        updateImage(); // İlk yüklemede çalıştır
     </script>
 </body>
 </html>
